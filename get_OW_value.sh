@@ -112,6 +112,7 @@ curl_kibana_api() { # "overwatch-applogs-*/_search" "$kibana_api_path/debug_even
   echo "$carrier_name"
   echo "$(pwd)/$carrier_name/$output_json"
   curl -X GET "localhost:$port/$subdirectory" -H 'Content-Type: application/json' -d "$kibana_api_require_json" > $(mkfile $CARRIER_or_TC $carrier_name $output_json)
+  echo "$(mkfile $CARRIER_or_TC $carrier_name $output_json)"
 }
 
 # Data Table - (jobmodels -> jobmodels_rlid.txt, debug_error -> debug_error_xxx.txt)

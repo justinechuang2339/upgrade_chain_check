@@ -101,10 +101,6 @@ remove_folder "issuer"
 remove_folder "acquirer" 
 remove_folder "TC"
 
-
-# Running Sanity test
-sh run_sanity_test.sh
-
 echo "Please wait for getting Overwatch Kibana API..."
 
 cur_time=$(date --date "now" +"%Y-%m-%dT%T.%3NZ" -u) # -u means display in UTC time zone (output will become 2023-03-01T01:36:33.160Z)
