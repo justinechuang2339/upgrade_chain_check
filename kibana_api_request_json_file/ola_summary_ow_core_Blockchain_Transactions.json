@@ -1,0 +1,63 @@
+{
+  "aggs": {},
+  "size": 0,
+  "fields": [
+    {
+      "field": "@timestamp",
+      "format": "date_time"
+    }
+  ],
+  "script_fields": {},
+  "stored_fields": [
+    "*"
+  ],
+  "runtime_mappings": {},
+  "_source": {
+    "excludes": []
+  },
+  "query": {
+    "bool": {
+      "must": [],
+      "filter": [
+        {
+          "match_phrase": {
+            "eventType.keyword": "JOB_TERMINAL"
+          }
+        },
+        {
+          "bool": {
+            "minimum_should_match": 1,
+            "should": [
+              {
+                "match_phrase": {
+                  "name.keyword": "U_PAY"
+                }
+              },
+              {
+                "match_phrase": {
+                  "name.keyword": "MS_REFUND"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "match_phrase": {
+            "jobStatus.keyword": "COMPLETED"
+          }
+        },
+        {
+          "range": {
+            "@timestamp": {
+              "format": "strict_date_optional_time",
+              "gte": "'$3'",
+              "lte": "'$4'"
+            }
+          }
+        }
+      ],
+      "should": [],
+      "must_not": []
+    }
+  }
+}

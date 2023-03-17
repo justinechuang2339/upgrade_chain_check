@@ -1,0 +1,105 @@
+{
+  "version": true,
+  "size": 500,
+  "sort": [
+    {
+      "@timestamp": {
+        "order": "desc",
+        "unmapped_type": "boolean"
+      }
+    }
+  ],
+  "fields": [
+    {
+      "field": "*",
+      "include_unmapped": "true"
+    },
+    {
+      "field": "@timestamp",
+      "format": "strict_date_optional_time"
+    }
+  ],
+  "script_fields": {},
+  "stored_fields": [
+    "*"
+  ],
+  "runtime_mappings": {},
+  "_source": false,
+  "query": {
+    "bool": {
+      "must": [],
+      "filter": [
+        {
+          "bool": {
+            "should": [
+              {
+                "query_string": {
+                  "fields": [
+                    "message"
+                  ],
+                  "query": "posted"
+                }
+              }
+            ],
+            "minimum_should_match": 1
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match_phrase": {
+                  "logger_name": "com.tbcasoft.eventserver.handler.MerchantWebhookHandler"
+                }
+              },
+              {
+                "match_phrase": {
+                  "logger_name": "com.tbcasoft.eventserver.handler.GroupWebhookHandler"
+                }
+              },
+              {
+                "match_phrase": {
+                  "logger_name": "com.tbcasoft.eventserver.handler.IssuerEventHandler"
+                }
+              },
+              {
+                "match_phrase": {
+                  "logger_name": "com.tbcasoft.eventserver.handler.TransactionEventHandler"
+                }
+              }
+            ],
+            "minimum_should_match": 1
+          }
+        },
+        {
+          "match_phrase": {
+            "service": "events"
+          }
+        },
+        {
+          "range": {
+            "@timestamp": {
+              "format": "strict_date_optional_time",
+              "gte": "2023-03-14T06:33:27.295Z",
+              "lte": "2023-03-14T06:48:27.295Z"
+            }
+          }
+        }
+      ],
+      "should": [],
+      "must_not": []
+    }
+  },
+  "highlight": {
+    "pre_tags": [
+      "@kibana-highlighted-field@"
+    ],
+    "post_tags": [
+      "@/kibana-highlighted-field@"
+    ],
+    "fields": {
+      "*": {}
+    },
+    "fragment_size": 2147483647
+  }
+}
