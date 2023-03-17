@@ -1,0 +1,1 @@
+{ "issuer": [ { "carrier": "APT", "ccps0_port": 8888, "ow_port": 9201 } ], "acquirer": [ { "carrier": "SB", "ccps0_port": 4568, "ow_port": 9202 } ], "TC": [ { "ow_port": 9203 } ] }

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # For example: 
-# sh ./ssh-TC.sh ow qa210s 3.15.189.255
+# sh ssh-TC.sh ow qa210s 3.15.189.255
 # $1 is chain name ex: qa210s
 # $2 is TC-bastion-IP ex: 3.15.189.255
 

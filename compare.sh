@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # use this file in local
-# For Example: sh ./compare.sh 15
+# For Example: sh compare.sh 15
 # $1 is last x minus ex : 15
 
 start_color="\033[44;37m"
@@ -66,34 +66,39 @@ remove_folder() {
   rm -rf $mydir
 }
 
-# echo "Remove file APT, AB and TC, if they already exist..."
-# remove_folder "APT"
-# remove_folder "SB"
-# remove_folder "TC"
+port_json="port.json"
+issuer_acquirer_json="issuer_or_acquirer.json"
+issuer_carrier=$(cat "$port_json" | jq -r '.issuer[].carrier')
+acquirer_carrier=$(cat "$port_json" | jq -r '.acquirer[].carrier')
 
-# # Running Sanity test
-# sh ./run_sanity_test.sh
+echo "Remove file $issuer_carrier, $acquirer_carrier and TC, if they already exist..."
+remove_folder "$issuer_carrier"
+remove_folder "$acquirer_carrier"
+remove_folder "TC"
 
-# echo "Please wait for getting Overwatch Kibana API..."
+# Running Sanity test
+sh run_sanity_test.sh
 
-# x_minutes=$1
-# cur_time=$(date --date "now" +"%Y-%m-%dT%T.%3NZ" -u) # -u means display in UTC time zone (output will become 2023-03-01T01:36:33.160Z)
-# cur_time_minus_x_minutes=$(date --date "now - $x_minutes minutes" +"%Y-%m-%dT%T.%3NZ" -u)
-# echo "Date and Time Range: Default Last $x_minutes minutes ${start_color}($cur_time_minus_x_minutes ~ $cur_time)${end_color}"
+echo "Please wait for getting Overwatch Kibana API..."
 
-# # $1 is time ex: 15
-# echo "GET TC api and create TC folder..."
-# sh ./get_OW_value.sh TC APT $1 > /dev/null 2>&1
-# sh ./get_OW_value.sh TC SB $1 > /dev/null 2>&1
+x_minutes=$1
+cur_time=$(date --date "now" +"%Y-%m-%dT%T.%3NZ" -u) # -u means display in UTC time zone (output will become 2023-03-01T01:36:33.160Z)
+cur_time_minus_x_minutes=$(date --date "now - $x_minutes minutes" +"%Y-%m-%dT%T.%3NZ" -u)
+echo "Date and Time Range: Default Last $x_minutes minutes ${start_color}($cur_time_minus_x_minutes ~ $cur_time)${end_color}"
 
-# echo "GET APT api and create APT folder..."
-# sh ./get_OW_value.sh CARRIER APT $1 > /dev/null 2>&1
+# $1 is time ex: 15
+echo "GET TC api and create TC folder..."
+sh get_OW_value.sh TC $issuer_carrier $1 > /dev/null 2>&1
+sh get_OW_value.sh TC $acquirer_carrier $1 > /dev/null 2>&1
 
-# echo "GET SB api and create SB folder..."
-# sh ./get_OW_value.sh CARRIER SB $1 > /dev/null 2>&1
+echo "GET $issuer_carrier api and create $issuer_carrier folder..."
+sh get_OW_value.sh CARRIER $issuer_carrier $1 > /dev/null 2>&1
 
-# echo "Compare CARRIER and TC..."
-for carrier in "APT" "SB"
+echo "GET $acquirer_carrier api and create $acquirer_carrier folder..."
+sh get_OW_value.sh CARRIER $acquirer_carrier $1 > /dev/null 2>&1
+
+echo "Compare $issuer_carrier, $acquirer_carrier and TC..."
+for carrier in "$issuer_carrier" "$acquirer_carrier"
 do
   echo "${start_color}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++$carrier++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${end_color}\n"
   compare_json_carrier_tc $carrier "auditlogs_Summary_List_" ".hits.total.value" "Audit - Summary List Count - " 
