@@ -8,6 +8,7 @@ start_color="\033[44;37m"
 end_color="\033[0m"
 error_start_color="\033[0;31m"
 good_start_color="\033[0;32m"
+x_minutes=$1
 
 compare_json_carrier_tc() { # "APT" "auditlogs_summary_list_" ".hits.total.value" "Audit - auditlogs - Summary List"
   carrier_value=$(cat "$1/$2$1.json" | jq -r $3)
@@ -62,8 +63,22 @@ display_txt_in_carrier() { # "APT" "debug_error_applogs_Summary_List_" "Debug le
 }
 
 remove_folder() {
-  mydir="$(pwd)/$1"
-  rm -rf $mydir
+  carrier_or_tc_name="$1"
+  if [ "$2" = "TC" ]
+  then
+    msg="$2"
+  else
+    msg="$2($carrier_or_tc_name)"
+  fi
+  if [ ! -z "$carrier_or_tc_name" ]
+  then
+    mydir="$(pwd)/$carrier_or_tc_name"
+    rm -rf $mydir
+    # echo "Remove $msg"
+  else
+    echo "Remove $msg, but port.json ${error_start_color}.$2[].carrier${end_color} is empty -> ${error_start_color}you should set port.json first.${end_color}"
+  fi
+  
 }
 
 port_json="port.json"
@@ -71,33 +86,32 @@ issuer_acquirer_json="issuer_or_acquirer.json"
 issuer_carrier=$(cat "$port_json" | jq -r '.issuer[].carrier')
 acquirer_carrier=$(cat "$port_json" | jq -r '.acquirer[].carrier')
 
-echo "Remove file $issuer_carrier, $acquirer_carrier and TC, if they already exist..."
-remove_folder "$issuer_carrier"
-remove_folder "$acquirer_carrier"
-remove_folder "TC"
+echo "Remove folder $issuer_carrier, $acquirer_carrier and TC, if they already exist..."
+remove_folder "$issuer_carrier" "issuer" 
+remove_folder "$acquirer_carrier" "acquirer" 
+remove_folder "TC" "TC"
 
-# Running Sanity test
-sh run_sanity_test.sh
 
-echo "Please wait for getting Overwatch Kibana API..."
+# # Running Sanity test
+# sh run_sanity_test.sh
 
-x_minutes=$1
+# echo "Please wait for getting Overwatch Kibana API..."
+
 cur_time=$(date --date "now" +"%Y-%m-%dT%T.%3NZ" -u) # -u means display in UTC time zone (output will become 2023-03-01T01:36:33.160Z)
 cur_time_minus_x_minutes=$(date --date "now - $x_minutes minutes" +"%Y-%m-%dT%T.%3NZ" -u)
 echo "Date and Time Range: Default Last $x_minutes minutes ${start_color}($cur_time_minus_x_minutes ~ $cur_time)${end_color}"
 
-# $1 is time ex: 15
 echo "GET TC api and create TC folder..."
-sh get_OW_value.sh TC $issuer_carrier $1 > /dev/null 2>&1
-sh get_OW_value.sh TC $acquirer_carrier $1 > /dev/null 2>&1
+sh get_OW_value.sh TC issuer $x_minutes > /dev/null 2>&1
+sh get_OW_value.sh TC acquirer $x_minutes > /dev/null 2>&1
 
-echo "GET $issuer_carrier api and create $issuer_carrier folder..."
-sh get_OW_value.sh CARRIER $issuer_carrier $1 > /dev/null 2>&1
+echo "GET issuer ( $issuer_carrier ) api and create issuer ( $issuer_carrier )folder..."
+sh get_OW_value.sh CARRIER issuer $x_minutes > /dev/null 2>&1
 
-echo "GET $acquirer_carrier api and create $acquirer_carrier folder..."
-sh get_OW_value.sh CARRIER $acquirer_carrier $1 > /dev/null 2>&1
+echo "GET acquirer ( $acquirer_carrier ) api and create acquirer ( $acquirer_carrier ) folder..."
+sh get_OW_value.sh CARRIER acquirer $x_minutes > /dev/null 2>&1
 
-echo "Compare $issuer_carrier, $acquirer_carrier and TC..."
+echo "Compare issuer ( $issuer_carrier ), acquirer ( $acquirer_carrier ) and TC..."
 for carrier in "$issuer_carrier" "$acquirer_carrier"
 do
   echo "${start_color}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++$carrier++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${end_color}\n"

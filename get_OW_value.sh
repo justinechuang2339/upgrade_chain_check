@@ -1,18 +1,23 @@
 #!/bin/bash
 
 # use this file in local
-# For Example: sh ./get_OW_value.sh CARRIER APT 15
+# For Example: sh get_OW_value.sh CARRIER issuer 15
 # $1 is CARRIER_or_TC ex: CARRIER
-# $2 is carrier_name ex : APT
+# $2 is issuer_or_acquirer ex : issuer
 # $3 is last x minus ex : 15
 
 start_color="\033[44;37m"
 error_start_color="\033[0;31m"
 end_color="\033[0m"
 
+
 CARRIER_or_TC=$1
-carrier_name=$2
+issuer_or_acquirer=$2
+carrier_name=$(cat "$port_json" | jq -r ".$issuer_or_acquirer[].carrier")
 x_minutes=$3
+port_json="port.json"
+
+
 cur_time=$(date --date "now" +"%Y-%m-%dT%T.%3NZ" -u) # -u means display in UTC time zone (output will become 2023-03-01T01:36:33.160Z)
 cur_time_minus_x_minutes=$(date --date "now - $x_minutes minutes" +"%Y-%m-%dT%T.%3NZ" -u)
 echo "Date and Time Range: Default Last $x_minutes minutes ${start_color}($cur_time_minus_x_minutes ~ $cur_time)${end_color}"
@@ -32,16 +37,18 @@ get_port() {
   carrier_name=$2
   if [ "$CARRIER_or_TC" = "CARRIER" ]
   then
-    if [ "$carrier_name" = "APT" ] 
-    then
-      echo "9201" # refer ./ssh-carrier-OW.sh
-    elif [ "$carrier_name" = "SB" ]
-    then
-      echo "9202"
-    fi
+    echo $(cat "$port_json" | jq -r ".$issuer_or_acquirer[].ow_port")
+    # if [ "$carrier_name" = "APT" ] 
+    # then
+    #   echo "9201" # refer ./ssh-carrier-OW.sh
+    # elif [ "$carrier_name" = "SB" ]
+    # then
+    #   echo "9202"
+    # fi
   elif [ "$CARRIER_or_TC" = "TC" ]
   then
-    echo "9203"
+    echo $(cat "$port_json" | jq -r ".TC[].ow_port")
+    # echo "9203"
   fi
 }
 
@@ -80,10 +87,11 @@ absolute_file_path() { #$CARRIER_or_TC $carrier_name $file_name
   echo "$(pwd)/$(relative_file_path $CARRIER_or_TC $carrier_name $file_name)"
 }
 
-curl_kibana_api() { # "overwatch-applogs-*/_search" "$kibana_api_path/debug_event_group_handler.json" $CARRIER_or_TC $carrier_name $cur_time_minus_x_minutes $cur_time $auditlogs_summary_list_json
+curl_kibana_api() { # "overwatch-applogs-*/_search" "$kibana_api_path/debug_event_group_handler.json" $CARRIER_or_TC $issuer_or_acquirer $cur_time_minus_x_minutes $cur_time $auditlogs_summary_list_json
   subdirectory=$1
   CARRIER_or_TC=$3
-  carrier_name=$4
+  issuer_or_acquirer=$4
+  carrier_name=$(cat "$port_json" | jq -r ".$issuer_or_acquirer[].carrier")
   cur_time_minus_x_minutes=$5
   cur_time=$6
   output_json=$7
@@ -315,13 +323,13 @@ check_if_value_in_json() { #$CARRIER_or_TC $carrier_name $auditlogs_summary_list
   fi
 }
 
-curl_kibana_api "overwatch-auditlogs-*/_search" "$kibana_api_path/auditlogs_Summary_List.json" $CARRIER_or_TC $carrier_name $cur_time_minus_x_minutes $cur_time $auditlogs_Summary_List_json
-curl_kibana_api "overwatch-applogs-*/_search" "$kibana_api_path/debug_error_applogs_Summary_List.json" $CARRIER_or_TC $carrier_name $cur_time_minus_x_minutes $cur_time $debug_error_applogs_Summary_List_json
-curl_kibana_api "overwatch-core-*/_search" "$kibana_api_path/ola_summary_ow_core_Blockchain_Transactions.json" $CARRIER_or_TC $carrier_name $cur_time_minus_x_minutes $cur_time $ola_summary_ow_core_Blockchain_Transactions_json
-curl_kibana_api "overwatch-core-*/_search" "$kibana_api_path/ola_summary_ow_core_BSS_Latency.json" $CARRIER_or_TC $carrier_name $cur_time_minus_x_minutes $cur_time $ola_summary_ow_core_BSS_Latency_json
-curl_kibana_api "overwatch-core-*/_search" "$kibana_api_path/ola_summary_ow_core_User_Pay_Latency.json" $CARRIER_or_TC $carrier_name $cur_time_minus_x_minutes $cur_time $ola_summary_ow_core_User_Pay_Latency_json
-curl_kibana_api "overwatch-jobmodels-*/_search" "$kibana_api_path/jobmodels_data_list.json" $CARRIER_or_TC $carrier_name $cur_time_minus_x_minutes $cur_time $jobmodels_data_list_json
-curl_kibana_api "overwatch-applogs-*/_search" "$kibana_api_path/debug_applogs_Summary_List_event_handler.json" $CARRIER_or_TC $carrier_name $cur_time_minus_x_minutes $cur_time $debug_applogs_Summary_List_event_handler_json
+curl_kibana_api "overwatch-auditlogs-*/_search" "$kibana_api_path/auditlogs_Summary_List.json" $CARRIER_or_TC $issuer_or_acquirer $cur_time_minus_x_minutes $cur_time $auditlogs_Summary_List_json
+curl_kibana_api "overwatch-applogs-*/_search" "$kibana_api_path/debug_error_applogs_Summary_List.json" $CARRIER_or_TC $issuer_or_acquirer $cur_time_minus_x_minutes $cur_time $debug_error_applogs_Summary_List_json
+curl_kibana_api "overwatch-core-*/_search" "$kibana_api_path/ola_summary_ow_core_Blockchain_Transactions.json" $CARRIER_or_TC $issuer_or_acquirer $cur_time_minus_x_minutes $cur_time $ola_summary_ow_core_Blockchain_Transactions_json
+curl_kibana_api "overwatch-core-*/_search" "$kibana_api_path/ola_summary_ow_core_BSS_Latency.json" $CARRIER_or_TC $issuer_or_acquirer $cur_time_minus_x_minutes $cur_time $ola_summary_ow_core_BSS_Latency_json
+curl_kibana_api "overwatch-core-*/_search" "$kibana_api_path/ola_summary_ow_core_User_Pay_Latency.json" $CARRIER_or_TC $issuer_or_acquirer $cur_time_minus_x_minutes $cur_time $ola_summary_ow_core_User_Pay_Latency_json
+curl_kibana_api "overwatch-jobmodels-*/_search" "$kibana_api_path/jobmodels_data_list.json" $CARRIER_or_TC $issuer_or_acquirer $cur_time_minus_x_minutes $cur_time $jobmodels_data_list_json
+curl_kibana_api "overwatch-applogs-*/_search" "$kibana_api_path/debug_applogs_Summary_List_event_handler.json" $CARRIER_or_TC $issuer_or_acquirer $cur_time_minus_x_minutes $cur_time $debug_applogs_Summary_List_event_handler_json
 
 check_if_value_in_json $CARRIER_or_TC $carrier_name $auditlogs_Summary_List_json ".hits.total.value" "Audit - auditlogs - Summary List"
 check_if_value_in_json $CARRIER_or_TC $carrier_name $debug_error_applogs_Summary_List_json ".hits.total.value" "Debug check level : error - applogs - Summary List"
