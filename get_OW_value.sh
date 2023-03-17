@@ -10,25 +10,26 @@ start_color="\033[44;37m"
 error_start_color="\033[0;31m"
 end_color="\033[0m"
 
+port_json="port.json"
 
 CARRIER_or_TC=$1
 issuer_or_acquirer=$2
 carrier_name=$(cat "$port_json" | jq -r ".$issuer_or_acquirer[].carrier")
 x_minutes=$3
-port_json="port.json"
 
+echo "carrier_name $carrier_name"
 
 cur_time=$(date --date "now" +"%Y-%m-%dT%T.%3NZ" -u) # -u means display in UTC time zone (output will become 2023-03-01T01:36:33.160Z)
 cur_time_minus_x_minutes=$(date --date "now - $x_minutes minutes" +"%Y-%m-%dT%T.%3NZ" -u)
 echo "Date and Time Range: Default Last $x_minutes minutes ${start_color}($cur_time_minus_x_minutes ~ $cur_time)${end_color}"
 
-auditlogs_Summary_List_json="auditlogs_Summary_List_$2.json"
-debug_error_applogs_Summary_List_json="debug_error_applogs_Summary_List_$2.json"
-debug_applogs_Summary_List_event_handler_json="debug_applogs_Summary_List_event_handler_$2.json"
-ola_summary_ow_core_Blockchain_Transactions_json="ola_summary_ow_core_Blockchain_Transactions_$2.json"
-ola_summary_ow_core_BSS_Latency_json="ola_summary_ow_core_BSS_Latency_$2.json"
-ola_summary_ow_core_User_Pay_Latency_json="ola_summary_ow_core_User_Pay_Latency_$2.json"
-jobmodels_data_list_json="jobmodels_data_list_$2.json"
+auditlogs_Summary_List_json="auditlogs_Summary_List_$carrier_name.json"
+debug_error_applogs_Summary_List_json="debug_error_applogs_Summary_List_$carrier_name.json"
+debug_applogs_Summary_List_event_handler_json="debug_applogs_Summary_List_event_handler_$carrier_name.json"
+ola_summary_ow_core_Blockchain_Transactions_json="ola_summary_ow_core_Blockchain_Transactions_$carrier_name.json"
+ola_summary_ow_core_BSS_Latency_json="ola_summary_ow_core_BSS_Latency_$carrier_name.json"
+ola_summary_ow_core_User_Pay_Latency_json="ola_summary_ow_core_User_Pay_Latency_$carrier_name.json"
+jobmodels_data_list_json="jobmodels_data_list_$carrier_name.json"
 
 kibana_api_path="$(pwd)/kibana_api_request_json_file"
 
@@ -38,13 +39,6 @@ get_port() {
   if [ "$CARRIER_or_TC" = "CARRIER" ]
   then
     echo $(cat "$port_json" | jq -r ".$issuer_or_acquirer[].ow_port")
-    # if [ "$carrier_name" = "APT" ] 
-    # then
-    #   echo "9201" # refer ./ssh-carrier-OW.sh
-    # elif [ "$carrier_name" = "SB" ]
-    # then
-    #   echo "9202"
-    # fi
   elif [ "$CARRIER_or_TC" = "TC" ]
   then
     echo $(cat "$port_json" | jq -r ".TC[].ow_port")
@@ -116,6 +110,8 @@ curl_kibana_api() { # "overwatch-applogs-*/_search" "$kibana_api_path/debug_even
 
   port=$(get_port $CARRIER_or_TC $carrier_name)
   echo "port $port"
+  echo "$carrier_name"
+  echo "$(pwd)/$carrier_name/$output_json"
   curl -X GET "localhost:$port/$subdirectory" -H 'Content-Type: application/json' -d "$kibana_api_require_json" > $(mkfile $CARRIER_or_TC $carrier_name $output_json)
 }
 

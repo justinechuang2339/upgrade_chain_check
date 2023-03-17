@@ -1,0 +1,7 @@
+RLID : 4854c2b4-3a18-4065-a918-2db29c8b7881
+type                 sourceTelcoId        targetCarrierId      status              
+----------------------------------------------------------------------------------------------------
+MS_REFUND            APT                  APT                  COMPLETED           
+U_PAY                APT                  APT                  COMPLETED           
+U_INVOICE            APT                  APT                  COMPLETED           
+U_DISCOVERY          APT                  APT                  COMPLETED           
