@@ -42,7 +42,6 @@ get_port() {
   elif [ "$CARRIER_or_TC" = "TC" ]
   then
     echo $(cat "$port_json" | jq -r ".TC[].ow_port")
-    # echo "9203"
   fi
 }
 
