@@ -6,6 +6,8 @@ run_sanity_test() {
 
   cd ~
   goman_path=$(find . -path \*go/src/github.com/tbcasoft/goman/api)
+  sanity_config_file=$(find . -path \*go/src/github.com/tbcasoft/goman/config/SANITY.cfg)
+  echo $sanity_config_file
   cd $goman_path
   echo "go to $(pwd)"
 

@@ -1,1 +1,1 @@
-{"took":1,"timed_out":false,"_shards":{"total":8,"successful":8,"skipped":0,"failed":0},"hits":{"total":{"value":6,"relation":"eq"},"max_score":null,"hits":[]},"aggregations":{"1":{"value":8.5}}}
+{"took":1,"timed_out":false,"_shards":{"total":8,"successful":8,"skipped":0,"failed":0},"hits":{"total":{"value":12,"relation":"eq"},"max_score":null,"hits":[]},"aggregations":{"1":{"value":3.1666666666666665}}}
